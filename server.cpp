@@ -74,12 +74,49 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
+    cout << "Connected with client!" << endl;
 
+    // Tracking session time
+    struct timeval start1, end1;
+    gettimeofday(&start1, NULL);
+    int bytesRead, bytesWritten = 0;
+
+    while(1)
+    {
+        cout << "Awaiting client response ...." << endl;
+        memset(&msg, 0, sizeof (msg)); // Clear the Buffer
+        bytesRead += recv(newSd, (char*)&msg, sizeof (msg), 0);
+
+        if(!strcmp(msg, "exit"))
+        {
+            cout <<"Client has quit the session" << endl;
+            break;
+        }
+        cout << "Client: " << msg << endl;
+        cout << ">";
+        string data;
+        getline(cin, data);
+        memset(&msg, 0, sizeof(msg)); //clear the buffer
+        strcpy(msg, data.c_str());
+        if(data == "exit")
+        {
+            //send to the client that server has closed the connection
+            send(newSd, (char*)&msg, strlen(msg), 0);
+            break;
+        }
+        //send the message to client
+        bytesWritten += send(newSd, (char*)&msg, strlen(msg), 0);
+
+
+    }
 
     // Finally we need to close the socket descriptors
     close(newSd);
     close(serverSd);
-
+    cout << "********Session********" << endl;
+    cout << "Bytes written: " << bytesWritten << " Bytes read: " << bytesRead << endl;
+    cout << "Elapsed time: " << (end1.tv_sec - start1.tv_sec)
+         << " secs" << endl;
     cout <<"Connection closing.." << endl;
     return 0;
 
